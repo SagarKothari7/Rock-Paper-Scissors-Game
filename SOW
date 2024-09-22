@@ -1,0 +1,43 @@
+Project Title:
+Rock Paper Scissors Showdown
+
+Team:
+Benjamin Ibarra, Sagar Kothari
+
+Project Objective:
+The objective is to make a multiplayer version of Rock, Paper, Scissors, where multiple clients can connect to a server. The game will be turn based. The server will handle the communcation, schronizing of turns, and who the winner is.
+
+Scope:
+Inclusions:
+We need the logic for a turn based Rock Paper Scissors game
+We need a server that can connect and manange multiple clients
+Handle the communication between the server and clients for payer moves
+Make sure the game works with a lot of rounds and synchronization
+Buttons so the clients can interact with the game
+Exclusions:
+Ai opponent or single player mode
+Expansion ogf game like tournament style
+Deliverables:
+A working python script for a server that can manage multiple clients.  Client script that connects to a server and allows the player to input moves. 
+Timeline:
+Key Milestones:
+Week 1: Setup a server and client communication
+Week 2: Create the game logic and server setup
+Week 3: Create the client side and server client interaction
+Week 4: Testing with a lot of clients
+Week 5: Final tweeks and bug fixes
+Task Breakdown:
+Each of us will meet together every week, maybe multiple times a week, to work on each task that needs to be completed. 
+Technical Requirements:
+Hardware:
+Multiple computers, or lab computers.
+Software:
+We're gonna use python and libararies like socket and threading. We will use vs code to run everything.
+Assumptions:
+Players can install python and run scripts on their computers. The server can handle multiple client connections. Everyone can connect to the server.
+Roles and Responsibilities:
+Since its only the two of us we will probably assume all roles together. We've worked in groups before and we mainly just do split it up evenly so not just one person is doing everything. Testing will be done through friends and family. 
+Communication Plan:
+We will meet in the library twice a week to complete tasks. We have eachothers social medias and phone numbers just in case we need to do stuff at home.
+Additional Notes:
+[Include any other relevant information or considerations that are specific to your project.]
