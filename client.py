@@ -1,4 +1,5 @@
 import socket
+import json
 
 def start_client(server_ip, server_port):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -7,11 +8,12 @@ def start_client(server_ip, server_port):
         print("[CONNECTED] Connected to the server.")
 
         while True:
-            message = input("Enter message: ")
-            if message.lower() == "exit":
-                break
+            move = input("Enter move (rock, paper, or scissors): ")
+            message = json.dumps({"type": "move", "move": move})
             client_socket.send(message.encode("utf-8"))
+            
             response = client_socket.recv(1024).decode("utf-8")
+            response_data = json.loads(response)
             print(f"[SERVER] {response}")
     except ConnectionRefusedError:
         print("[ERROR] Connection failed. Is the server running?")

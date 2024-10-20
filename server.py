@@ -1,5 +1,6 @@
 import socket
 import threading
+import json
 
 # Function to handle client connections
 def handle_client(client_socket, address):
@@ -11,12 +12,22 @@ def handle_client(client_socket, address):
             message = client_socket.recv(1024).decode("utf-8")
             if not message:
                 break
-            print(f"[{address}] {message}")
-            client_socket.send("Message received".encode("utf-8"))
+            message = json.loads(message)
+            if message["type"] == "join":
+                print(f"{message['player_name']} has joined the game.")
+            elif message["type"] == 'move':
+                print(f"Received move from {address}: {message['move']}")
+            elif message["type"] == 'chat':
+                print(f"Chat from {address}: {message['message']}")
+            elif message["type"] == 'quit':
+                print(f"Player {address} has quit.")
+                connected = False  
+                
+            client_socket.send(json.dumps({"type": "ack", "message": "Message received"}).encode("utf-8"))
         except ConnectionResetError:
             print(f"[ERROR] Connection lost with {address}")
             break
-    
+        
     print(f"[DISCONNECT] {address} disconnected.")
     client_socket.close()
 
