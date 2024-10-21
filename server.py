@@ -42,6 +42,7 @@ def handle_client(client_socket, address):
                 move = message['move']
                 players[player_name] = move  
                 print(f"Received move from {address}: {message['move']}")
+                broadcast(f"{player_name} chose {move}.", client_socket)
             elif message["type"] == 'chat':
                 chat_message = f"Player {player_name}: {message['message']}"
                 broadcast(chat_message, client_socket)
