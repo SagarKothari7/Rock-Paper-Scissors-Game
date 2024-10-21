@@ -11,8 +11,10 @@ def receive_messages(client_socket):
                 break
             response_data=json.loads(response)
             print(f"[SERVER] {response_data['message']}")
-        except:
-            print("[ERROR] Failed to receive message from the server.")
+        except json.JSONDecodeError:
+            print("[ERROR] Could not decode message from server.")
+        except Exception as e:
+            print(f"[ERROR] Failed to receive message from the server: {e}")
             break
 
             
