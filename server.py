@@ -5,6 +5,18 @@ import json
 clients = []
 players = {}
 
+def broadcast(message, sender_socket):
+    for client in clients:
+        if client != sender_socket:
+            try:
+                client.send(json.dumps({"type": "info", "message": message}).encode("utf-8"))
+            except Exception as e:
+                print(f"[ERROR Could not send message to Client: {e}")
+                client.close()
+                clients.remove(client)
+            
+        
+
 # Function to handle client connections
 def handle_client(client_socket, address):
     global players
@@ -66,14 +78,3 @@ if __name__ == "__main__":
     start_server(port)
 
 
-def broadcast(message, sender_socket):
-    for client in clients:
-        if client != sender_socket:
-            try:
-                client.send(json.dumps({"type": "info", "message": message}).encode("utf-8"))
-            except Exception as e:
-                print(f"[ERROR Could not send message to Client: {e}")
-                client.close()
-                clients.remove(client)
-            
-        
