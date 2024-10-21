@@ -13,6 +13,7 @@ This is a simple Rock-Paper-Scissors game implemented using Python and sockets.
 3. **Connect clients:** Run the `client.py` script on two different machines or terminals.
 4. **Provide an IP address and port number for each client:** The client program will prompt you to provide an IP address and a port number to connect to.
 5. **Send messages to the server:** The client program will prompt you to send a message to the server. You can now send messages to the server!
+6. **Send moves to the server:** The client program will prompt you to send a move if you select the move option. You can choose from Rock, Paper, or Scissors and the server will receive your move. The server will wait till both players have inputted a move before telling the players who picked which move.
 
 **Technologies used:**
 * Python
