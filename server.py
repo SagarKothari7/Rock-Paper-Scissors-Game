@@ -33,12 +33,16 @@ def handle_client(client_socket, address):
             message = client_socket.recv(1024).decode("utf-8")
             if not message:
                 break
+            print(f"[DEBUG] Received message: {message}")
             message = json.loads(message)
+            
             if message["type"] == "join":
                 player_name = message['player_name']
                 if player_name in players:
                     player_name = player_name + "_" + str(address[1])
+                    
                 players[player_name] = client_socket
+                
                 moves[player_name] = None
                 print(f"{message['player_name']} has joined the game.")
                 broadcast(f"Player {player_name} has joined the game.", client_socket)
