@@ -2,10 +2,18 @@ import socket
 import threading
 import json
 
+clients = []
+players = {}
+
 # Function to handle client connections
 def handle_client(client_socket, address):
+    global players
+    player_name = None
     print(f"[NEW CONNECTION] {address} connected.")
+    
     connected = True
+    
+    clients.append(client_socket)
     
     while connected:
         try:
@@ -14,13 +22,20 @@ def handle_client(client_socket, address):
                 break
             message = json.loads(message)
             if message["type"] == "join":
+                player_name = message['player_name']
+                players[player_name] = None
                 print(f"{message['player_name']} has joined the game.")
+                broadcast(f"Player {player_name} has joined the game.", client_socket)
             elif message["type"] == 'move':
+                move = message['move']
+                players[player_name] = move  
                 print(f"Received move from {address}: {message['move']}")
             elif message["type"] == 'chat':
-                print(f"Chat from {address}: {message['message']}")
+                chat_message = f"Player {player_name}: {message['message']}"
+                broadcast(chat_message, client_socket)
             elif message["type"] == 'quit':
-                print(f"Player {address} has quit.")
+                players.pop(player_name, None)
+                print(f"Player {player_name} has quit.")
                 connected = False  
                 
             client_socket.send(json.dumps({"type": "ack", "message": "Message received"}).encode("utf-8"))
@@ -49,3 +64,16 @@ def start_server(port):
 if __name__ == "__main__":
     port = int(input("Enter the port number for the server: "))
     start_server(port)
+
+
+def broadcast(message, sender_socket):
+    for client in clients:
+        if client != sender_socket:
+            try:
+                client.send(json.dumps({"type": "info", "message": message}).encode("utf-8"))
+            except Exception as e:
+                print(f"[ERROR Could not send message to Client: {e}")
+                client.close()
+                clients.remove(client)
+            
+        
