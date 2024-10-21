@@ -8,7 +8,6 @@ moves = {}
 
 def broadcast(message, sender_socket=None):
     for client in clients:
-        if client != sender_socket:
             try:
                 client.send(json.dumps({"type": "info", "message": message}).encode("utf-8"))
             except Exception as e:
