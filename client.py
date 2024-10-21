@@ -16,8 +16,10 @@ def start_client(server_ip, server_port):
             
             if action == "move":
                 move = input("Enter move (rock, paper, or scissors): ")
+                message = json.dumps({"type": "move", "move": move})
             elif action == "chat":
                 chat_message = input("Enter chat message")
+                message = json.dumps({"type": "chat", "message": chat_message})
             elif action == "quit":
                 message = json.dumps({"type": "quit"})
                 client_socket.send(message.encode("utf-8"))
