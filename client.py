@@ -3,22 +3,30 @@ import json
 import threading
 
 def receive_messages(client_socket):
+    buffer = ""
     while True:
         try:
             response = client_socket.recv(1024).decode("utf-8")
             if not response:
                 print("[SERVER] Connection closed.")
                 break
-            response_data=json.loads(response)
-            print(f"[SERVER] {response_data['message']}")
+            
+            buffer += response
+            # Process each complete message in buffer
+            while "\n" in buffer:
+                message, buffer = buffer.split("\n", 1)
+                response_data = json.loads(message)
+                
+                if response_data["type"] == "info":
+                    print(f"[SERVER] {response_data['message']}")
+                elif response_data["type"] == "game_state":
+                    game_state = response_data["state"]
+                    print(f"[GAME STATE] {json.dumps(game_state, indent=2)}")
         except json.JSONDecodeError:
             print("[ERROR] Could not decode message from server.")
         except Exception as e:
             print(f"[ERROR] Failed to receive message from the server: {e}")
             break
-
-            
-            
 
 def start_client(server_ip, server_port):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -40,20 +48,18 @@ def start_client(server_ip, server_port):
                 move = input("Enter move (rock, paper, or scissors): ").strip().lower()
                 message = json.dumps({"type": "move", "move": move})
             elif action == "chat":
-                chat_message = input("Enter chat message")
+                chat_message = input("Enter chat message: ")
                 message = json.dumps({"type": "chat", "message": chat_message})
             elif action == "quit":
                 message = json.dumps({"type": "quit"})
                 client_socket.send(message.encode("utf-8"))
-                break 
+                break
             else:
                 print("[ERROR] Invalid action. Please enter 'move, 'chat', or 'quit'.")
                 continue
             
             client_socket.send(message.encode("utf-8"))
-            
-            
-            
+
     except ConnectionRefusedError:
         print("[ERROR] Connection failed. Is the server running?")
     finally:
