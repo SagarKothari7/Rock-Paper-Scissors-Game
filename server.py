@@ -1,6 +1,7 @@
 import socket
 import threading
 import json
+import argparse  # Added for command-line arguments
 
 clients = []
 players = {}
@@ -29,8 +30,6 @@ def broadcast(message, sender_socket=None):
                 client.close()
                 clients.remove(client)
 
-
-# Function to handle client connections
 def handle_client(client_socket, address):
     global players, game_state
     player_name = None
@@ -76,12 +75,24 @@ def handle_client(client_socket, address):
                     player1, player2 = list(moves.keys())
                     move1, move2 = moves[player1], moves[player2]
 
-                    broadcast(f"{player1} chose {move1}. {player2} chose {move2}.")
+                    # Determine winner
+                    rules = {"rock": "scissors", "scissors": "paper", "paper": "rock"}
+                    if move1 == move2:
+                        result = "Draw!"
+                    elif rules[move1] == move2:
+                        result = f"{player1} wins!"
+                    else:
+                        result = f"{player2} wins!"
+
+                    broadcast(f"{player1} chose {move1}. {player2} chose {move2}. Result: {result}")
+                    print(f"{player1} chose {move1}. {player2} chose {move2}. Result: {result}")
                     
-                    # Reset moves in game state
+                    # Update game state
+                    game_state["result"] = result
+                    game_state["status"] = "Game Over"
                     moves[player1], moves[player2] = None, None
                     game_state["moves"] = {}
-                
+
                 broadcast_game_state()
 
             elif message["type"] == 'chat':
@@ -114,12 +125,11 @@ def handle_client(client_socket, address):
         game_state["status"] = "waiting for players"
     broadcast_game_state()
 
-# Server setup
-def start_server(port):
+def start_server(ip, port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(("0.0.0.0", port))
+    server_socket.bind((ip, port))
     server_socket.listen()
-    print(f"[LISTENING] Server is listening on port {port}")
+    print(f"[LISTENING] Server is listening on {ip}:{port}")
 
     while True:
         client_socket, addr = server_socket.accept()
@@ -129,5 +139,8 @@ def start_server(port):
         print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
 
 if __name__ == "__main__":
-    port = int(input("Enter the port number for the server: "))
-    start_server(port)
+    parser = argparse.ArgumentParser(description="Rock Paper Scissors Server")
+    parser.add_argument("-p", "--port", required=True, type=int, help="Server Port")
+    args = parser.parse_args()
+
+    start_server("0.0.0.0", args.port)
