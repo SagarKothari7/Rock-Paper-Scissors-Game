@@ -30,8 +30,6 @@ def broadcast(message, sender_socket=None):
                 client.close()
                 clients.remove(client)
 
-
-# Function to handle client connections
 def handle_client(client_socket, address):
     global players, game_state
     player_name = None
@@ -77,12 +75,24 @@ def handle_client(client_socket, address):
                     player1, player2 = list(moves.keys())
                     move1, move2 = moves[player1], moves[player2]
 
-                    broadcast(f"{player1} chose {move1}. {player2} chose {move2}.")
+                    # Determine winner
+                    rules = {"rock": "scissors", "scissors": "paper", "paper": "rock"}
+                    if move1 == move2:
+                        result = "Draw!"
+                    elif rules[move1] == move2:
+                        result = f"{player1} wins!"
+                    else:
+                        result = f"{player2} wins!"
+
+                    broadcast(f"{player1} chose {move1}. {player2} chose {move2}. Result: {result}")
+                    print(f"{player1} chose {move1}. {player2} chose {move2}. Result: {result}")
                     
-                    # Reset moves in game state
+                    # Update game state
+                    game_state["result"] = result
+                    game_state["status"] = "Game Over"
                     moves[player1], moves[player2] = None, None
                     game_state["moves"] = {}
-                
+
                 broadcast_game_state()
 
             elif message["type"] == 'chat':
@@ -115,7 +125,6 @@ def handle_client(client_socket, address):
         game_state["status"] = "waiting for players"
     broadcast_game_state()
 
-# Server setup
 def start_server(ip, port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((ip, port))

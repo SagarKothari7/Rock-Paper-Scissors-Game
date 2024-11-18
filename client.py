@@ -5,8 +5,6 @@ import tkinter as tk
 from tkinter import messagebox
 import argparse  # Added for command-line arguments
 
-# Keep all the existing code the same, adding only the UI components below
-
 def receive_messages(client_socket):
     buffer = ""
     while True:
@@ -36,11 +34,10 @@ def log_message(message):
         log_area.insert(tk.END, f"{message}\n")
         log_area.see(tk.END)
     else:
-        print(message)  # Fallback to console logging if UI isn't ready
+        print(message)
 
 def update_game_state(state):
     if "moves" in state and len(state["moves"]) == 2:
-        # Display both moves and determine the winner
         player1, player2 = list(state["moves"].keys())
         move1, move2 = state["moves"][player1], state["moves"][player2]
         result = determine_winner(move1, move2)
@@ -81,15 +78,12 @@ def start_client_ui(server_ip, server_port):
     try:
         client_socket.connect((server_ip, server_port))
 
-        # Join the game
         player_name = input("Enter your player name: ")
         join_message = json.dumps({"type": "join", "player_name": player_name})
         client_socket.send(join_message.encode("utf-8"))
 
-        # Start receiving messages
         threading.Thread(target=receive_messages, args=(client_socket,), daemon=True).start()
 
-        # Tkinter setup
         root = tk.Tk()
         root.title("Rock Paper Scissors Game")
 
@@ -106,7 +100,7 @@ def start_client_ui(server_ip, server_port):
         log_area = tk.Text(root, height=15, state="normal")
         log_area.pack(fill=tk.BOTH, padx=10, pady=10)
 
-        log_message("[CONNECTED] Connected to the server.")  # Log after UI is initialized
+        log_message("[CONNECTED] Connected to the server.")
 
         root.mainloop()
 
