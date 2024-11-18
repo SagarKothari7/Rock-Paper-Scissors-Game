@@ -1,6 +1,7 @@
 import socket
 import threading
 import json
+import argparse  # Added for command-line arguments
 
 clients = []
 players = {}
@@ -115,11 +116,11 @@ def handle_client(client_socket, address):
     broadcast_game_state()
 
 # Server setup
-def start_server(port):
+def start_server(ip, port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(("0.0.0.0", port))
+    server_socket.bind((ip, port))
     server_socket.listen()
-    print(f"[LISTENING] Server is listening on port {port}")
+    print(f"[LISTENING] Server is listening on {ip}:{port}")
 
     while True:
         client_socket, addr = server_socket.accept()
@@ -129,5 +130,8 @@ def start_server(port):
         print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
 
 if __name__ == "__main__":
-    port = int(input("Enter the port number for the server: "))
-    start_server(port)
+    parser = argparse.ArgumentParser(description="Rock Paper Scissors Server")
+    parser.add_argument("-p", "--port", required=True, type=int, help="Server Port")
+    args = parser.parse_args()
+
+    start_server("0.0.0.0", args.port)
