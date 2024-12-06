@@ -60,7 +60,7 @@ def determine_winner(move1, move2):
         return "You win!"
     else:
         return "You lose!"
-    
+
 def safe_send(client_socket, message):
     try:
         client_socket.send(message.encode("utf-8"))
@@ -95,8 +95,19 @@ def send_chat_message():
         messagebox.showerror("Error", f"Failed to send chat message: {e}")
         log_message(f"[ERROR] Failed to send chat message: {e}")
 
+def disconnect():
+    try:
+        message = json.dumps({"type": "quit"})
+        safe_send(client_socket, message)
+    except Exception as e:
+        log_message(f"[ERROR] Failed to send disconnect message: {e}")
+    finally:
+        client_socket.close()
+        log_message("[DISCONNECTED] Disconnected from the server.")
+        root.destroy()
+
 def start_client_ui(server_ip, server_port):
-    global log_area, move_entry, game_state_label, client_socket, chat_entry
+    global log_area, move_entry, game_state_label, client_socket, chat_entry, root
 
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -130,6 +141,8 @@ def start_client_ui(server_ip, server_port):
 
         tk.Button(root, text="Send Chat", command=send_chat_message).pack()
 
+        tk.Button(root, text="Disconnect", command=disconnect).pack()
+
         log_message("[CONNECTED] Connected to the server.")
 
         root.mainloop()
@@ -137,7 +150,10 @@ def start_client_ui(server_ip, server_port):
     except ConnectionRefusedError:
         print("[ERROR] Connection failed. Is the server running?")
     finally:
-        client_socket.close()
+        try:
+            client_socket.close()
+        except:
+            pass
         print("[DISCONNECTED] Disconnected from server.")
 
 if __name__ == "__main__":
