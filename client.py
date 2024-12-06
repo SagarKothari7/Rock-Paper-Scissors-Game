@@ -67,7 +67,6 @@ def safe_send(client_socket, message):
     except Exception as e:
         log_message(f"[ERROR] Failed to send message: {e}")
 
-
 def send_move():
     move = move_entry.get().strip().lower()
     if move not in ["rock", "paper", "scissors"]:
@@ -82,7 +81,6 @@ def send_move():
         messagebox.showerror("Error", f"Failed to send move: {e}")
         log_message(f"[ERROR] Failed to send move: {e}")
 
-    
 def send_chat_message():
     chat_message = chat_entry.get().strip()
     if not chat_message:
