@@ -3,7 +3,7 @@ import json
 import threading
 import tkinter as tk
 from tkinter import messagebox
-import argparse  # Added for command-line arguments
+import argparse
 
 def receive_messages(client_socket):
     buffer = ""
@@ -17,20 +17,20 @@ def receive_messages(client_socket):
             buffer += response
             while "\n" in buffer:
                 message, buffer = buffer.split("\n", 1)
-                response_data = json.loads(message)
-
-                if response_data["type"] == "info":
-                    log_message(f"[SERVER] {response_data['message']}")
-                elif response_data["type"] == "game_state":
-                    update_game_state(response_data["state"])
-        except json.JSONDecodeError:
-            log_message("[ERROR] Could not decode message from server.")
+                try:
+                    response_data = json.loads(message)
+                    if response_data["type"] == "info":
+                        log_message(f"[SERVER] {response_data['message']}")
+                    elif response_data["type"] == "game_state":
+                        update_game_state(response_data["state"])
+                except json.JSONDecodeError:
+                    log_message(f"[ERROR] Could not decode message: {message}")
         except Exception as e:
-            log_message(f"[ERROR] Failed to receive message from the server: {e}")
+            log_message(f"[ERROR] Failed to receive message: {e}")
             break
 
 def log_message(message):
-    if 'log_area' in globals() and log_area:  # Check if log_area is defined
+    if 'log_area' in globals() and log_area:
         log_area.insert(tk.END, f"{message}\n")
         log_area.see(tk.END)
     else:
@@ -61,18 +61,53 @@ def determine_winner(move1, move2):
     else:
         return "You lose!"
 
+def safe_send(client_socket, message):
+    try:
+        client_socket.send(message.encode("utf-8"))
+    except Exception as e:
+        log_message(f"[ERROR] Failed to send message: {e}")
+
 def send_move():
     move = move_entry.get().strip().lower()
     if move not in ["rock", "paper", "scissors"]:
         messagebox.showerror("Invalid Move", "Move must be 'rock', 'paper', or 'scissors'.")
         return
-    message = json.dumps({"type": "move", "move": move})
-    client_socket.send(message.encode("utf-8"))
-    move_entry.delete(0, tk.END)
-    log_message(f"You chose: {move}. Waiting for the other player...")
+    try:
+        message = json.dumps({"type": "move", "move": move})
+        safe_send(client_socket, message)
+        move_entry.delete(0, tk.END)
+        log_message(f"You chose: {move}. Waiting for the other player...")
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to send move: {e}")
+        log_message(f"[ERROR] Failed to send move: {e}")
+
+def send_chat_message():
+    chat_message = chat_entry.get().strip()
+    if not chat_message:
+        messagebox.showerror("Invalid Message", "Chat message cannot be empty.")
+        return
+    try:
+        message = json.dumps({"type": "chat", "message": chat_message})
+        safe_send(client_socket, message)
+        chat_entry.delete(0, tk.END)
+        log_message(f"You: {chat_message}")
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to send chat message: {e}")
+        log_message(f"[ERROR] Failed to send chat message: {e}")
+
+def disconnect():
+    try:
+        message = json.dumps({"type": "quit"})
+        safe_send(client_socket, message)
+    except Exception as e:
+        log_message(f"[ERROR] Failed to send disconnect message: {e}")
+    finally:
+        client_socket.close()
+        log_message("[DISCONNECTED] Disconnected from the server.")
+        root.destroy()
 
 def start_client_ui(server_ip, server_port):
-    global log_area, move_entry, game_state_label, client_socket
+    global log_area, move_entry, game_state_label, client_socket, chat_entry, root
 
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -100,6 +135,14 @@ def start_client_ui(server_ip, server_port):
         log_area = tk.Text(root, height=15, state="normal")
         log_area.pack(fill=tk.BOTH, padx=10, pady=10)
 
+        tk.Label(root, text="Chat:").pack()
+        chat_entry = tk.Entry(root)
+        chat_entry.pack()
+
+        tk.Button(root, text="Send Chat", command=send_chat_message).pack()
+
+        tk.Button(root, text="Disconnect", command=disconnect).pack()
+
         log_message("[CONNECTED] Connected to the server.")
 
         root.mainloop()
@@ -107,7 +150,10 @@ def start_client_ui(server_ip, server_port):
     except ConnectionRefusedError:
         print("[ERROR] Connection failed. Is the server running?")
     finally:
-        client_socket.close()
+        try:
+            client_socket.close()
+        except:
+            pass
         print("[DISCONNECTED] Disconnected from server.")
 
 if __name__ == "__main__":
